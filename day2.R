@@ -62,11 +62,37 @@ row1 <- codeoutput2[1,]
 
 library(purrr)
 
-for (i in row1){
-  if(all(i%%row1==0)){
-    print(i)
+
+#fulldata
+builddf <- data.frame()
+fulldata <- function(inputval) {
+  for (i in 1:length(inputval)) {
+    rowinput <- inputval[i,]
+    test <-map_df(map_df(map_df(t(rowinput),
+                                function(x) rowinput %% x),
+                         function(y) y==0),
+                  function(z) rowinput * z)
+  
+
+    #get the row with 2 vectors
+    test2<-map_df(map_df(map_df(t(rowinput),
+                                function(x) rowinput %% x),
+                         function(y) y==0),
+                  function(z) sum(z) == 2) %>% match(TRUE)
+    
+    test3 <-as.data.frame(t(test * test2)) 
+    
+    test4<-test3[!is.na(test3)]
+    test5<-test4[!(test4==0)]
+    outp<-max(test5)/min(test5) 
+    
+    builddf<-rbind(builddf,
+                   outp)
   }
+return(builddf)
 }
 
+sum(fulldata(codeoutput2))
 
-purrr::map(row1, function(x) x / t(x))
+map_df(codeoutput2,fulldata)
+
